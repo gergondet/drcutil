@@ -1,0 +1,37 @@
+export SRC_DIR=$HOME/src
+export PREFIX=/usr/local
+export HAVE_ATOM_ACCESS=1
+export ATOM_USER_NAME=gergondet
+export SUDO=sudo
+export INTERNAL_MACHINE=1
+export MAKE_THREADS_NUMBER=1
+export BUILD_TYPE=RelWithDebInfo
+export OCTOMAP_VERSION=1.8.0
+export ENABLE_ASAN=0
+export IS_VIRTUAL_BOX=0
+export BUILD_TRAP_FPE=0
+export ROBOT_HOSTNAME=localhost
+export ENABLE_SAVEDBG=1
+
+/bin/ping atom.a01.aist.go.jp -c 1 &> /dev/null
+if [ $? -ne 0 ] 
+then
+    export HAVE_ATOM_ACCESS=0
+fi
+
+export UBUNTU_VER="$(lsb_release -rs)"
+
+if [ "$(lsb_release -is)" == "Debian" ]
+then
+    export INTERNAL_MACHINE=1
+    export UBUNTU_VER=14.04
+fi
+
+BUILD_GOOGLE_TEST=ON
+
+err_report() {
+    echo "Error on line $2:$1"
+    echo "Stopping the script $(basename "$3")."
+}
+
+

@@ -80,9 +80,7 @@ else
     EXTRA_OPTION=(-DINSTALL_HRPIO=OFF)
 fi
 cmake_install_with_option hrpsys-base -DCOMPILE_JAVA_STUFF=OFF -DBUILD_KALMAN_FILTER=OFF -DBUILD_STABILIZER=OFF -DENABLE_DOXYGEN=OFF "${EXTRA_OPTION[@]}"
-cmake_install_with_option HRP2 -DROBOT_NAME=HRP2KAI
-cmake_install_with_option HRP2KAI
-cmake_install_with_option HRP5P
+cmake_install_with_option HRP4
 if [ "$INTERNAL_MACHINE" -eq 0 ]; then
     EXTRA_OPTION=()
 else
@@ -96,37 +94,6 @@ cmake_install_with_option state-observation -DCMAKE_INSTALL_LIBDIR=lib
 cmake_install_with_option hrpsys-state-observation
 if [ "$ENABLE_SAVEDBG" -eq 1 ]; then
     cmake_install_with_option savedbg -DSAVEDBG_FRONTEND_NAME=savedbg-hrp -DSAVEDBG_FRONTEND_ARGS="-P 'dpkg -l > dpkg' -f '$PREFIX/share/robot-sources.tar.bz2'"
-fi
-if [ "$INTERNAL_MACHINE" -eq 0 ]; then
-    if [ "$IS_VIRTUAL_BOX" -eq 1 ]; then
-      CHOREONOID_CMAKE_CXX_FLAGS="-DJOYSTICK_DEVICE_PATH=\"/dev/input/js1\" $CHOREONOID_CMAKE_CXX_FLAGS" #mouse integration uses /dev/input/js1 in virtualbox
-    fi
-    # FIXME?: This doesn't look right.  CMAKE_CXX_FLAGS is ignored
-    # unless CMAKE_BUILD_TYPE is empty, which it is not by default.
-    cmake_install_with_option "choreonoid" -DENABLE_CORBA=ON -DBUILD_CORBA_PLUGIN=ON -DBUILD_OPENRTM_PLUGIN=ON -DBUILD_PCL_PLUGIN=ON -DBUILD_OPENHRP_PLUGIN=ON -DBUILD_GRXUI_PLUGIN=ON -DBODY_CUSTOMIZERS="$SRC_DIR/HRP2/customizer/HRP2Customizer;$SRC_DIR/HRP5P/customizer/HRP5PCustomizer" -DBUILD_DRC_USER_INTERFACE_PLUGIN=ON -DCMAKE_CXX_FLAGS="$CHOREONOID_CMAKE_CXX_FLAGS" -DROBOT_HOSTNAME="$ROBOT_HOSTNAME"
-    if [ "$BUILD_TRAP_FPE" -eq 1 ]; then
-	if [ "$ENABLE_ASAN" -eq 1 ]; then
-	    TRAP_FPE_EXTRA_OPTION=(-DTRAP_FPE_SANITIZER_WORKAROUND=ON)
-	else
-	    TRAP_FPE_EXTRA_OPTION=()
-	fi
-        # DynamoRIO doesn't seem to have an official install step.
-        # We just unpack the distribution directly into $PREFIX.
-        $SUDO tar -zxf $SRC_DIR/DynamoRIO-$DYNAMORIO_VERSION.tar.gz -C $PREFIX/share
-	cmake_install_with_option trap-fpe "-DTRAP_FPE_BLACKLIST=$DRCUTIL/trap-fpe.blacklist.ubuntu$UBUNTU_VER" "-DDynamoRIO_DIR=$PREFIX/share/DynamoRIO-$DYNAMORIO_VERSION/cmake" "${TRAP_FPE_EXTRA_OPTION[@]}"
-    fi
-
-    mkdir -p $HOME/.config/Choreonoid
-    cp $DRCUTIL/.config/Choreonoid.conf $DRCUTIL
-    sed -i -e "s#/home/vagrant/src#$SRC_DIR#g" $DRCUTIL/Choreonoid.conf
-    sed -i -e "s#/home/vagrant/openrtp#$PREFIX#g" $DRCUTIL/Choreonoid.conf
-    if [ ! -e $HOME/.config/Choreonoid/Choreonoid.conf ];then
-	cp $DRCUTIL/Choreonoid.conf $HOME/.config/Choreonoid
-    fi
-else
-    cmake_install_with_option flexiport -DBUILD_DOCUMENTATION=OFF
-    cmake_install_with_option hokuyoaist -DBUILD_DOCUMENTATION=OFF -DBUILD_PYTHON_BINDINGS=OFF
-    cmake_install_with_option rtchokuyoaist -DBUILD_DOCUMENTATION=OFF
 fi
 
 packsrc $built_dirs
